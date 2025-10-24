@@ -1,0 +1,188 @@
+#include <stdio.h>
+
+/*
+  Batalha Naval - Habilidades com Áreas de Efeito
+  - Tabuleiro 10x10
+  - Três matrizes de habilidade: Cone, Cruz, Octaedro (ex.: 5x5)
+  - Construção das matrizes com loops aninhados e condicionais
+  - Sobreposição centralizada das matrizes no tabuleiro
+  - Valores: 0=Água, 3=Navio, 5=Área afetada
+  Observações:
+  - Posições de origem definidas diretamente no código.
+  - Se a área de efeito atingir uma célula com navio (3), o navio permanece visível (não sobrescrevemos).
+*/
+
+/* Dimensões do tabuleiro */
+#define LIN 10
+#define COL 10
+
+/* Dimensões das matrizes de habilidade (usar ímpar para centro) */
+#define MSIZE 5
+
+/* Função para inicializar o tabuleiro com água (0) e alguns navios (3) */
+void inicializarTabuleiro(int tab[LIN][COL]) {
+    for (int i = 0; i < LIN; i++) {
+        for (int j = 0; j < COL; j++) {
+            tab[i][j] = 0; // água
+        }
+    }
+
+    // Exemplo: colocar alguns navios (valor 3) manualmente para visualização
+    tab[2][2] = 3;
+    tab[2][3] = 3;
+    tab[5][5] = 3;
+    tab[6][5] = 3;
+    tab[7][7] = 3;
+}
+
+/* Função para construir a matriz "cone" (apontando para baixo).
+   Lógica: para cada linha r (0..n-1), preenche colunas do centro - r até centro + r.
+   Ex.: 5x5 (center = 2)
+   r=0 -> col 2..2
+   r=1 -> col 1..3
+   r=2 -> col 0..4
+*/
+void construirCone(int cone[MSIZE][MSIZE]) {
+    int center = MSIZE / 2; // índice do centro (ex: 2 para MSIZE=5)
+    for (int r = 0; r < MSIZE; r++) {
+        for (int c = 0; c < MSIZE; c++) {
+            // Por padrão, não afetado
+            cone[r][c] = 0;
+            // Se a coluna c estiver dentro do "alcance" da linha r do cone, marca 1
+            if ( (c >= center - r) && (c <= center + r) ) {
+                cone[r][c] = 1;
+            }
+        }
+    }
+}
+
+/* Função para construir a matriz "cruz".
+   Lógica: marca toda a linha do centro e toda a coluna do centro como 1.
+*/
+void construirCruz(int cruz[MSIZE][MSIZE]) {
+    int center = MSIZE / 2;
+    for (int r = 0; r < MSIZE; r++) {
+        for (int c = 0; c < MSIZE; c++) {
+            // se estiver na linha central ou na coluna central -> 1
+            if (r == center || c == center) {
+                cruz[r][c] = 1;
+            } else {
+                cruz[r][c] = 0;
+            }
+        }
+    }
+}
+
+/* Função para construir a matriz "octaedro" (vista frontal -> losango/diamante).
+   Lógica: pontos que satisfazem |r-center| + |c-center| <= center são parte do losango.
+*/
+void construirOctaedro(int oct[MSIZE][MSIZE]) {
+    int center = MSIZE / 2;
+    for (int r = 0; r < MSIZE; r++) {
+        for (int c = 0; c < MSIZE; c++) {
+            int dr = r - center;
+            if (dr < 0) dr = -dr;
+            int dc = c - center;
+            if (dc < 0) dc = -dc;
+            if ( (dr + dc) <= center ) {
+                oct[r][c] = 1;
+            } else {
+                oct[r][c] = 0;
+            }
+        }
+    }
+}
+
+/* Sobrescrever a área de efeito no tabuleiro:
+   - matriz: matriz de habilidade (valores 0/1)
+   - msize: dimensão da matriz (ex: 5)
+   - origemLinha, origemColuna: coordenada no tabuleiro que corresponde ao centro da matriz
+   Regras:
+   - centraliza a matriz: matrix[center][center] --> tab[origemLinha][origemColuna]
+   - apenas marca células de água (0) para 5; se já existe navio (3), mantém 3.
+   - verifica limites do tabuleiro antes de escrever
+*/
+void aplicarHabilidade(int tab[LIN][COL], int matriz[MSIZE][MSIZE], int origemLinha, int origemColuna) {
+    int center = MSIZE / 2;
+    for (int r = 0; r < MSIZE; r++) {
+        for (int c = 0; c < MSIZE; c++) {
+            if (matriz[r][c] == 1) {
+                int tr = origemLinha - center + r;
+                int tc = origemColuna - center + c;
+                // verificar limites do tabuleiro
+                if (tr >= 0 && tr < LIN && tc >= 0 && tc < COL) {
+                    // se for água (0), marca como área afetada (5)
+                    if (tab[tr][tc] == 0) {
+                        tab[tr][tc] = 5;
+                    }
+                    // se for navio (3), mantém 3 (visualiza navio)
+                    // se já for 5, mantém 5
+                }
+            }
+        }
+    }
+}
+
+/* Função auxiliar para imprimir a matriz (útil para debug/visualizar as matrizes de habilidade) */
+void imprimirMatriz(int mat[MSIZE][MSIZE]) {
+    for (int r = 0; r < MSIZE; r++) {
+        for (int c = 0; c < MSIZE; c++) {
+            printf("%d ", mat[r][c]);
+        }
+        printf("\n");
+    }
+}
+
+/* Função para imprimir o tabuleiro 10x10 */
+void imprimirTabuleiro(int tab[LIN][COL]) {
+    for (int i = 0; i < LIN; i++) {
+        for (int j = 0; j < COL; j++) {
+            printf("%d ", tab[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int tab[LIN][COL];
+    int cone[MSIZE][MSIZE];
+    int cruz[MSIZE][MSIZE];
+    int octaedro[MSIZE][MSIZE];
+
+    // Inicializa tabuleiro e posiciona alguns navios de exemplo
+    inicializarTabuleiro(tab);
+
+    // Construir cada matriz dinamicamente usando loops aninhados e condicionais
+    construirCone(cone);
+    construirCruz(cruz);
+    construirOctaedro(octaedro);
+
+    // Exemplos de origens (linha, coluna) para centrar as habilidades no tabuleiro
+    // (valores fixos definidos diretamente no código conforme simplificação)
+    int origemConeLinha = 1;   // próximo ao topo, para que o cone aponte para baixo dentro do tabuleiro
+    int origemConeColuna = 4;
+
+    int origemCruzLinha = 5;   // centro do tabuleiro
+    int origemCruzColuna = 4;
+
+    int origemOctLinha = 7;    // posição mais abaixo/direita para ver o losango
+    int origemOctCol = 7;
+
+    // Aplicar habilidades ao tabuleiro (sobreposição centralizada)
+    aplicarHabilidade(tab, cone, origemConeLinha, origemConeColuna);
+    aplicarHabilidade(tab, cruz, origemCruzLinha, origemCruzColuna);
+    aplicarHabilidade(tab, octaedro, origemOctLinha, origemOctCol);
+
+    // Exibir matrizes de habilidade (opcional, para visualização)
+    printf("Matriz - Cone (1 = área afetada):\n");
+    imprimirMatriz(cone);
+    printf("\nMatriz - Cruz (1 = área afetada):\n");
+    imprimirMatriz(cruz);
+    printf("\nMatriz - Octaedro (1 = área afetada):\n");
+    imprimirMatriz(octaedro);
+
+    printf("\nTabuleiro 10x10 (0=Água, 3=Navio, 5=Área afetada):\n");
+    imprimirTabuleiro(tab);
+
+    return 0;
+}
