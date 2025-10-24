@@ -1,0 +1,99 @@
+#include <stdio.h>
+
+/* ================================================================
+   Simulação Avançada de Movimentação de Peças de Xadrez
+   ---------------------------------------------------------------
+   Peças: Torre, Bispo, Rainha e Cavalo
+   Técnicas utilizadas:
+   - Recursividade (Torre, Bispo e Rainha)
+   - Loops aninhados complexos (Bispo e Cavalo)
+   ---------------------------------------------------------------
+   Autor: [Seu Nome]
+   Data: [Data Atual]
+================================================================ */
+
+// ======================== TORRE ===============================
+// A torre move-se em linha reta (horizontal ou vertical).
+// Aqui, ela se moverá 5 casas para a direita, de forma recursiva.
+void moverTorre(int casas) {
+    if (casas == 0) return;  // caso base da recursão
+    printf("Direita\n");
+    moverTorre(casas - 1);   // chamada recursiva
+}
+
+// ======================== BISPO ===============================
+// O bispo move-se em diagonal. Aqui, ele se moverá 5 casas
+// para cima e para a direita. A recursividade é usada no controle
+// do movimento geral, e loops aninhados simulam o avanço
+// nas direções vertical (externa) e horizontal (interna).
+void moverBispo(int casas) {
+    if (casas == 0) return;  // caso base
+    printf("Movimento %d do Bispo:\n", casas);
+    
+    // Loop aninhado para representar o deslocamento em diagonal
+    for (int i = 1; i <= casas; i++) {     // movimento vertical (Cima)
+        for (int j = 1; j <= 1; j++) {     // movimento horizontal (Direita)
+            printf("Cima, Direita (%d)\n", i);
+        }
+    }
+
+    moverBispo(casas - 1); // chamada recursiva
+}
+
+// ======================== RAINHA ===============================
+// A rainha pode mover-se em todas as direções.
+// Aqui, simulará 8 casas para a esquerda usando recursão.
+void moverRainha(int casas) {
+    if (casas == 0) return;  // caso base
+    printf("Esquerda\n");
+    moverRainha(casas - 1);  // chamada recursiva
+}
+
+// ======================== CAVALO ===============================
+// O cavalo move-se em "L": duas casas para cima e uma para a direita.
+// Aqui usamos loops aninhados e controle com break/continue.
+void moverCavalo() {
+    int movimentos = 3; // número de saltos de exemplo
+
+    printf("Movimentos do CAVALO (em L: duas casas para cima e uma para a direita):\n");
+
+    for (int i = 1; i <= movimentos; i++) {          // loop externo controla o salto
+        for (int j = 1; j <= 2; j++) {               // loop interno controla as submovimentações
+            if (j == 1) {
+                printf("Cima (%d)\n", j);
+                continue; // continua para o próximo movimento do mesmo salto
+            }
+            if (j == 2) {
+                printf("Direita\n");
+                break; // encerra o loop interno após completar o "L"
+            }
+        }
+        printf("Salto %d concluído!\n\n", i);
+    }
+}
+
+// ======================== FUNÇÃO PRINCIPAL =====================
+int main() {
+    printf("===== MOVIMENTOS COMPLEXOS DO XADREZ =====\n\n");
+
+    // -------- TORRE --------
+    printf("TORRE (5 casas para a direita - recursivo):\n");
+    moverTorre(5);
+    printf("\n");
+
+    // -------- BISPO --------
+    printf("BISPO (5 casas na diagonal - recursivo com loops aninhados):\n");
+    moverBispo(5);
+    printf("\n");
+
+    // -------- RAINHA --------
+    printf("RAINHA (8 casas para a esquerda - recursivo):\n");
+    moverRainha(8);
+    printf("\n");
+
+    // -------- CAVALO --------
+    moverCavalo();
+    printf("\nSimulação concluída!\n");
+
+    return 0;
+}
